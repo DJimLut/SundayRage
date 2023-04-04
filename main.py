@@ -14,6 +14,7 @@ class Game:
         self.font_name = pg.font.match_font(FONT_NAME)
         self.score = 0
         self.loaded = False
+        self.noMobCheatCheck = False
         self.running = True
     
     def new(self):
@@ -45,6 +46,18 @@ class Game:
                     match event.key:
                         case pg.K_SPACE:
                             self.player.shoot()
+                        case pg.K_n:
+                            self.noMobCheatCheck = True
+                        case pg.K_m:
+                            if self.noMobCheatCheck:
+                                for mob in self.mobs:
+                                    mob.kill()
+                                self.noMobCheatCheck = False
+                            else:
+                                for i in range(5):
+                                    m = Mob(self)
+                                    self.all_sprites.add(m)
+                                    self.mobs.add(m)
                         case pg.K_q:
                             self.playing = False
                             self.running = False
