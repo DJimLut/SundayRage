@@ -10,15 +10,27 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.centerx = WIDTH / 2
         self.rect.bottom = HEIGHT - 10
+        self.turning = False
         self.speedx = 0
 
     def update(self):
         self.speedx = 0
         keystate = pygame.key.get_pressed()
+
         if keystate[pygame.K_LEFT] or keystate[pygame.K_a]:
+            if not self.turning:
+                self.turning = True
+                self.image = pygame.transform.rotate(self.image, 15)
             self.speedx = -8
-        if keystate[pygame.K_RIGHT] or keystate[pygame.K_d]:
+        elif keystate[pygame.K_RIGHT] or keystate[pygame.K_d]:
+            if not self.turning:
+                self.turning = True
+                self.image = pygame.transform.rotate(self.image, -15)
             self.speedx = 8
+        else:
+            self.image = pygame.transform.scale(LAWN_MOWER, (60, 120)).convert_alpha()
+            self.turning = False
+
         self.rect.x += self.speedx
         if self.rect.right > WIDTH - 64:
             self.rect.right = WIDTH - 64
