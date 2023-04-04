@@ -18,8 +18,10 @@ class Game:
         self.mobs = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
         self.player = Player(self)
+        self.map = Map(self)
+        self.all_sprites.add(self.map)
         self.all_sprites.add(self.player)
-        for i in range(8):
+        for i in range(5):
             m = Mob(self)
             self.all_sprites.add(m)
             self.mobs.add(m)
