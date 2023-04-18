@@ -6,20 +6,31 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, game):
         pygame.sprite.Sprite.__init__(self)
         self.game = game
-        self.image = pygame.Surface((50, 40))
-        self.image.fill(GREEN)
+        self.image = pygame.transform.scale(LAWN_MOWER, (60, 120)).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.centerx = WIDTH / 2
         self.rect.bottom = HEIGHT - 10
+        self.turning = False
         self.speedx = 0
 
     def update(self):
         self.speedx = 0
         keystate = pygame.key.get_pressed()
-        if keystate[pygame.K_LEFT]:
+
+        if keystate[pygame.K_LEFT] or keystate[pygame.K_a]:
+            if not self.turning:
+                self.turning = True
+                self.image = pygame.transform.rotate(self.image, 15)
             self.speedx = -8
-        if keystate[pygame.K_RIGHT]:
+        elif keystate[pygame.K_RIGHT] or keystate[pygame.K_d]:
+            if not self.turning:
+                self.turning = True
+                self.image = pygame.transform.rotate(self.image, -15)
             self.speedx = 8
+        else:
+            self.image = pygame.transform.scale(LAWN_MOWER, (60, 120)).convert_alpha()
+            self.turning = False
+
         self.rect.x += self.speedx
         if self.rect.right > WIDTH - 64:
             self.rect.right = WIDTH - 64
@@ -67,8 +78,7 @@ class Mob(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((10, 20))
-        self.image.fill(YELLOW)
+        self.image = pygame.transform.scale(SAW_BLADE, (60, 60)).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.bottom = y
         self.rect.centerx = x
@@ -76,6 +86,7 @@ class Bullet(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.y += self.speedy
+        self.image = pygame.transform.rotate(self.image, 90)
         # kill if it moves off the top of the screen
         if self.rect.bottom < 0:
             self.kill()
@@ -84,13 +95,10 @@ class Map(pygame.sprite.Sprite):
     def __init__(self, game):
         pygame.sprite.Sprite.__init__(self)
         self.game = game
-        self.image = MAP.convert()
+        self.image = pygame.image.load(path.join(MAP_DIR, random.choice(MAPS))).convert()
         self.rect = self.image.get_rect()
         self.rect.bottom = HEIGHT
         self.rect.left = 0
 
     def update(self):
         self.rect.y += 1
-
-        if self.rect.top > -10:
-            self.rect.bottom = HEIGHT
