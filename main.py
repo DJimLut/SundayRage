@@ -8,26 +8,46 @@ class Game:
         # initialize game window, etc
         pg.init()
         pg.mixer.init()
+        pg.mixer.music.load(path.join(SOUND_DIR, 'loop3.mp3'))
+        pg.mixer.music.set_volume(0.4)
+        pg.mixer.music.play(loops = -1)
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
         pg.display.set_caption("Sunday Rage")
         self.clock = pg.time.Clock()
         self.font_name = pg.font.match_font(FONT_NAME)
         self.score = 0
+        self.framesPassed = 0
         self.loaded = False
         self.noMobCheatCheck = False
         self.running = True
+        self.speedUp = False
+
+        # sounds
+        self.sounds = {}
+        for sound in ['gas.wav', 'oil.wav', 'saw.wav']:
+            self.sounds[sound] = pg.mixer.Sound(path.join(SOUND_DIR, sound))
     
     def new(self):
         self.all_sprites = pg.sprite.Group()
         self.mobs = pg.sprite.Group()
         self.bullets = pg.sprite.Group()
+        self.items = pg.sprite.Group()
         self.player = Player(self)
         self.map = Map(self)
         self.all_sprites.add(self.map)
         for i in range(5):
             m = Mob(self)
-            self.all_sprites.add(m)
             self.mobs.add(m)
+            self.all_sprites.add(m)
+            match random.choice(ITEMS):
+                case 'Gas':
+                    i = Gas(self, random.randint(64, WIDTH - 64), random.randint(-10, HEIGHT - 40))
+                case 'Oil':
+                    i = Oil(self, random.randint(64, WIDTH - 64), random.randint(-10, HEIGHT - 40))
+                case 'InfAmmo':
+                    i = InfAmmo(self, random.randint(64, WIDTH - 64), random.randint(-10, HEIGHT - 40))
+            self.items.add(i)
+            self.all_sprites.add(i)
         self.all_sprites.add(self.player)
         self.run()
     
@@ -67,7 +87,26 @@ class Game:
                             self.player.shoot()
 
             # Update
-            self.all_sprites.update()
+            self.all_sprites.update()            
+            # check if 10 seconds have passed from when powerup was picked up
+            if self.framesPassed % 600 == 0:
+                self.speedUp = False
+                self.player.infShooting = False
+
+            self.framesPassed += 1
+
+            # check if more items needed
+            if not self.items:
+                for i in range(5):
+                    match random.choice(ITEMS):
+                        case 'Gas':
+                            item = Gas(self, random.randint(64, WIDTH - 64), random.randint(-10, HEIGHT - 40))
+                        case 'Oil':
+                            item = Oil(self, random.randint(64, WIDTH - 64), random.randint(-10, HEIGHT - 40))
+                        case 'InfAmmo':
+                            item = InfAmmo(self, random.randint(64, WIDTH - 64), random.randint(-10, HEIGHT - 40))
+                    self.items.add(item)
+                    self.all_sprites.add(item)
 
             # check to see if new map is needed
             if self.map.rect.top > -10 and not self.loaded:
@@ -78,10 +117,12 @@ class Game:
                 self.all_sprites.add(self.newMap)
                 for mob in self.mobs:
                     self.all_sprites.add(mob)
+                for item in self.items:
+                    self.all_sprites.add(item) 
                 self.all_sprites.add(self.player)
                 self.loaded = True
 
-            if self.map.rect.top == HEIGHT and self.loaded:
+            if self.map.rect.top >= HEIGHT and self.loaded:
                 self.map.kill()
                 self.map = self.newMap
                 self.loaded = False
@@ -91,14 +132,27 @@ class Game:
             for hit in hits:
                 self.score += 10
                 m = Mob(self)
-                self.all_sprites.add(m)
                 self.mobs.add(m)
+                self.all_sprites.add(m)
 
             # check to see if a mob hit the player
             hits = pg.sprite.spritecollide(self.player, self.mobs, False)
             if hits:
-                self.playing = False
-                self.running = False
+                if self.player.health == 0:
+                    self.playing = False
+                    self.running = False
+                else:
+                    self.player.health -= 1
+                    hits[0].kill()
+            
+            if self.player.infShooting:
+                self.player.shoot()
+
+            # check to see if an item hit the player
+            hits = pg.sprite.spritecollide(self.player, self.items, False)
+            for hit in hits:
+                hit.execute()
+                hit.kill()
 
             # Draw / render
             self.screen.fill(BLACK)
