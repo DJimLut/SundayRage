@@ -25,11 +25,11 @@ A python based game combining Sunday Lawn and Galaga into one for Murray State's
 
 -   No Mobs
     -   Controls
-        Press N, M
+        Press Key Pad 1
     -   Description
         Kills all mobs
 -   Add 5 Mobs
     -   Controls
-        Press M
+        Press Key Pad 2
     -   Description
         Adds 5 mobs
