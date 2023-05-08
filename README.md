@@ -11,7 +11,6 @@ A python based game combining Sunday Lawn and Galaga into one for Murray State's
 2. Shooter enemy
     - Peashooter
     - Shoots towards the bottom of screen, not following user
-    - Can be ran over
 
 # Ammunition
 
