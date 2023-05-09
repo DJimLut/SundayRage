@@ -274,6 +274,7 @@ class Game:
             self.clock.tick(FPS)
             for event in pg.event.get():
                 if event.type == pg.QUIT:
+                    self.loaded = False
                     self.running = False
                     waiting = False
                 if event.type == pg.KEYDOWN and event.key == pg.K_RETURN:
